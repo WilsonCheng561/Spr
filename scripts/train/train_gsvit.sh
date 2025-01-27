@@ -12,6 +12,7 @@ CUDA_VISIBLE_DEVICES=0 python downstream_phase/run_dt_rgb.py \
 --warmup_epochs 5 \
 --data_path /mnt/disk0/haoding/cholec80_original \
 --data_path_rgb /mnt/disk0/haoding/cholec80_original \
+--gsvit_feat_root /mnt/disk0/haoding/cholec80_original/gsvit/train_20 \
 --nb_classes 7 \
 --data_strategy online \
 --output_mode key_frame \
@@ -19,8 +20,8 @@ CUDA_VISIBLE_DEVICES=0 python downstream_phase/run_dt_rgb.py \
 --sampling_rate 4 \
 --data_set Cholec80 \
 --data_fps 1fps \
---output_dir /mnt/disk0/haoding/wz_results/10mask_1depth_rgb/results2 \
---log_dir /mnt/disk0/haoding/wz_results/10mask_1depth_rgb/results2 \
+--output_dir /mnt/disk0/haoding/wz_results/GSVIT/results \
+--log_dir /mnt/disk0/haoding/wz_results/GSVIT/results \
 --num_workers 12 \
 --enable_deepspeed \
 --no_auto_resume 

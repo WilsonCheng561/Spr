@@ -18,11 +18,11 @@ CUDA_VISIBLE_DEVICES=0 python downstream_phase/run_dt_rgb.py \
 --num_frames 16 \
 --sampling_rate 4 \
 --eval \
---finetune /mnt/disk0/haoding/wz_results/10mask_1depth_rgb/results/surgformer_HTA_KCA_dt_rgb_Cholec80_0.0005_0.75_online_key_frame_frame16_Fixed_Stride_4/checkpoint-best/mp_rank_00_model_states.pt \
+--finetune /mnt/disk0/haoding/wz_results/10mask_1depth_rgb/results2/surgformer_HTA_KCA_dt_rgb_Cholec80_0.0005_0.75_online_key_frame_frame16_Fixed_Stride_4/checkpoint-9/mp_rank_00_model_states.pt \
 --data_set Cholec80 \
 --data_fps 1fps \
---output_dir /mnt/disk0/haoding/wz_results/10mask_1depth_rgb/results/evaluate/cholec80_41-50_14ch_original \
---log_dir /mnt/disk0/haoding/wz_results/10mask_1depth_rgb/results/evaluate/cholec80_41-50_14ch_original \
+--output_dir /mnt/disk0/haoding/wz_results/10mask_1depth_rgb/results1/evaluate/cholec80_41-50_14ch_original \
+--log_dir /mnt/disk0/haoding/wz_results/10mask_1depth_rgb/results1/evaluate/cholec80_41-50_14ch_original \
 --num_workers 15 \
 --no_auto_resume \
 #--dist_eval \

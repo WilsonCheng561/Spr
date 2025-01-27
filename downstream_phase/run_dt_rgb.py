@@ -117,6 +117,8 @@ def get_args():
     parser.add_argument("--data_path", default="/path/to/data", type=str)
     parser.add_argument("--data_path_rgb", default="/path/to/data", type=str)
     parser.add_argument("--eval_data_path", default="/path/to/data", type=str)
+    parser.add_argument("--gsvit_feat_root", default="/path/to/data", type=str)
+    
     parser.add_argument("--nb_classes", default=7, type=int)
     parser.add_argument("--imagenet_default_mean_and_std", default=True, action="store_true")
     parser.add_argument("--data_strategy", type=str, default="online")
@@ -488,78 +490,78 @@ def main(args, ds_init):
             data_loader_train.sampler.set_epoch(epoch)
 
         if log_writer:
-            log_writer.set_step(epoch* num_training_steps_per_epoch* args.update_freq)
+            log_writer.set_step(epoch * num_training_steps_per_epoch * args.update_freq)
 
-        train_stats= train_one_epoch(
+        train_stats = train_one_epoch(
             model, criterion, data_loader_train, optimizer, device,
             epoch, loss_scaler, args.clip_grad, None, mixup_fn,
-            log_writer= log_writer,
-            start_steps= epoch* num_training_steps_per_epoch,
-            lr_schedule_values= lr_schedule_values,
-            wd_schedule_values= wd_schedule_values,
-            num_training_steps_per_epoch= num_training_steps_per_epoch,
-            update_freq= args.update_freq,
+            log_writer=log_writer,
+            start_steps=epoch * num_training_steps_per_epoch,
+            lr_schedule_values=lr_schedule_values,
+            wd_schedule_values=wd_schedule_values,
+            num_training_steps_per_epoch=num_training_steps_per_epoch,
+            update_freq=args.update_freq,
         )
 
         # save checkpoint
         if args.output_dir and args.save_ckpt:
-            if ((epoch+1) % args.save_ckpt_freq==0) or ((epoch+1)== args.epochs):
+            if ((epoch + 1) % args.save_ckpt_freq == 0) or ((epoch + 1) == args.epochs):
                 utils.save_model(
                     args=args, model=model, model_without_ddp=model_without_ddp,
                     optimizer=optimizer, loss_scaler=loss_scaler,
                     epoch=epoch, model_ema=None,
                 )
 
+        # 注释掉验证部分
         # validation
-        if (dataset_val is not None) and (not args.disable_eval_during_finetuning):
-            test_stats= validation_one_epoch(data_loader_val, model, device)
-            print(f"Val Acc@1: {test_stats['acc1']:.1f}%")
-            if max_accuracy< test_stats["acc1"]:
-                max_accuracy= test_stats["acc1"]
-                max_epoch= epoch
-                no_improve_count=0
-                # save best
-                if args.output_dir and args.save_ckpt:
-                    utils.save_model(
-                        args=args, model=model, model_without_ddp=model_without_ddp,
-                        optimizer=optimizer, loss_scaler=loss_scaler,
-                        epoch="best", model_ema=None,
-                    )
-            else:
-                no_improve_count +=1
-                print(f"No improvement at epoch={epoch}, no_improve_count={no_improve_count}")
-                if no_improve_count>= args.early_stop_patience:
-                    print(f"Early stop triggered (>= {args.early_stop_patience}).")
-                    break
+        # if (dataset_val is not None) and (not args.disable_eval_during_finetuning):
+        #     test_stats = validation_one_epoch(data_loader_val, model, device)
+        #     print(f"Val Acc@1: {test_stats['acc1']:.1f}%")
+        #     if max_accuracy < test_stats["acc1"]:
+        #         max_accuracy = test_stats["acc1"]
+        #         max_epoch = epoch
+        #         no_improve_count = 0
+        #         # save best
+        #         if args.output_dir and args.save_ckpt:
+        #             utils.save_model(
+        #                 args=args, model=model, model_without_ddp=model_without_ddp,
+        #                 optimizer=optimizer, loss_scaler=loss_scaler,
+        #                 epoch="best", model_ema=None,
+        #             )
+        #     else:
+        #         no_improve_count += 1
+        #         print(f"No improvement at epoch={epoch}, no_improve_count={no_improve_count}")
+        #         if no_improve_count >= args.early_stop_patience:
+        #             print(f"Early stop triggered (>= {args.early_stop_patience}).")
+        #             break
 
-            log_stats= {
-                **{f"train_{k}": v for k,v in train_stats.items()},
-                **{f"val_{k}": v for k,v in test_stats.items()},
-                "epoch": epoch,
-                "n_parameters": n_parameters,
-            }
+        # 更新日志，不包括验证指标
+        log_stats = {
+            **{f"train_{k}": v for k, v in train_stats.items()},
+            # **{f"val_{k}": v for k, v in test_stats.items()},  # 注释掉验证日志部分
+            "epoch": epoch,
+            "n_parameters": n_parameters,
+        }
 
-            if log_writer:
-                log_writer.update(val_acc1=test_stats["acc1"], head="perf", step=epoch)
-                log_writer.update(val_acc5=test_stats["acc5"], head="perf", step=epoch)
-                log_writer.update(val_loss=test_stats["loss"], head="perf", step=epoch)
-        else:
-            log_stats= {
-                **{f"train_{k}": v for k,v in train_stats.items()},
-                "epoch": epoch,
-                "n_parameters": n_parameters,
-            }
+        if log_writer:
+            log_writer.update(val_acc1=None, head="perf", step=epoch)
+            log_writer.update(val_acc5=None, head="perf", step=epoch)
+            log_writer.update(val_loss=None, head="perf", step=epoch)
+            # log_writer.update(val_acc1=test_stats["acc1"], head="perf", step=epoch)
+            # log_writer.update(val_acc5=test_stats["acc5"], head="perf", step=epoch)
+            # log_writer.update(val_loss=test_stats["loss"], head="perf", step=epoch)
 
         if args.output_dir and utils.is_main_process():
             if log_writer:
                 log_writer.flush()
-            with open(os.path.join(args.output_dir,"log.txt"), "a", encoding="utf-8") as f:
-                f.write(json.dumps(log_stats)+"\n")
+            with open(os.path.join(args.output_dir, "log.txt"), "a", encoding="utf-8") as f:
+                f.write(json.dumps(log_stats) + "\n")
+           
 
     # ============ Training done, load best => test ============
 
-    # 重新创建同名模型
-    final_model= create_model(
+    # create same model from scratch
+    model = create_model(
         args.model,
         pretrained=False,
         num_classes=args.nb_classes,
@@ -570,14 +572,14 @@ def main(args, ds_init):
         attn_drop_rate=args.attn_drop_rate,
         drop_block_rate=None,
     )
-    preds_file= os.path.join(args.output_dir, f"{global_rank}.txt")
+    preds_file = os.path.join(args.output_dir, f"{global_rank}.txt")
 
-    best_pretrained_path= os.path.join(args.output_dir, "checkpoint-best/mp_rank_00_model_states.pt")
+    best_pretrained_path = os.path.join(args.output_dir, "checkpoint-best/mp_rank_00_model_states.pt")
     if not os.path.exists(best_pretrained_path):
         print("Warning: no checkpoint-best found. Use last epoch checkpoint instead.")
-        last_ckpt= os.path.join(args.output_dir, f"checkpoint-{epoch}.pth")
+        last_ckpt = os.path.join(args.output_dir, f"checkpoint-{epoch}.pth")
         if os.path.exists(last_ckpt):
-            best_pretrained_path= last_ckpt
+            best_pretrained_path = last_ckpt
         else:
             print("No suitable ckpt found, skip final test.")
             return

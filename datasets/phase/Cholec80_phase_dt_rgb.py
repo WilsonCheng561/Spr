@@ -12,41 +12,36 @@ from datasets.transforms.random_erasing import RandomErasing
 
 def convert_masks_depth(mask_path, depth_path, frame_id):
     """
-    根据 frame_id 读取 mask(10通道) + depth(1通道)，合并为 shape=(H,W,11)。
-    假设 frame_id => target_frame_id = frame_id*25 用于拼接 '0000025.png' 等。
+    读取并返回 (H,W,11): 其中 10 通道来自 mask 的 one-hot，1 通道来自 depth。
+    假设 frame_id => target_frame_id = frame_id * 25，用于拼成 '0000025.png'。
     """
     frame_id = int(frame_id)
     target_frame_id = frame_id * 25
     depth_file_name = f"{target_frame_id:07d}.png"
     mask_file_name  = f"{target_frame_id:07d}.png"
-    
-    # depth_file_name = f"{frame_id:05d}.png"
-    # mask_file = f"{frame_id:05d}.png"
 
     depth_file_path = os.path.join(depth_path, depth_file_name)
     if not os.path.exists(depth_file_path):
         raise FileNotFoundError(f"Depth file not found: {depth_file_path}")
 
     depth = np.array(Image.open(depth_file_path)).astype(np.float32)
-    depth = depth / 65535.0  # 归一化到[0,1]
+    depth = depth / 65535.0  # 归一化到 [0,1]
 
-    mask_path_ = os.path.join(mask_path, mask_file_name)
-    if not os.path.exists(mask_path_):
-        raise FileNotFoundError(f"Mask file not found: {mask_path_}")
+    mask_file_path = os.path.join(mask_path, mask_file_name)
+    if not os.path.exists(mask_file_path):
+        raise FileNotFoundError(f"Mask file not found: {mask_file_path}")
 
-    mask = np.array(Image.open(mask_path_))
+    mask = np.array(Image.open(mask_file_path))
     if not np.all((mask >= 0) & (mask <= 10)):
-        raise ValueError(f"Mask {mask_path_} 存在不在 [0,10] 范围的类别")
+        raise ValueError(f"Mask {mask_file_path} 存在不在 [0,10] 范围的类别")
 
     H, W = mask.shape
     tmp = np.zeros((H, W, 11), dtype=np.float32)
-    tmp[np.arange(H)[:, None], np.arange(W), mask] = 1
-    # 前 1 通道是背景0类，这里去掉 => 10通道
-    mask_10 = tmp[:, :, 1:]
+    tmp[np.arange(H)[:, None], np.arange(W), mask] = 1  # 0通道是背景 => 其后 10 通道
+    mask_10 = tmp[:, :, 1:]  # 去掉背景 => 只留 10 通道
 
-    # depth 作为第 11 通道
     depth_channel = np.expand_dims(depth, axis=-1)
-    final_11ch = np.concatenate((mask_10, depth_channel), axis=-1)
+    final_11ch = np.concatenate((mask_10, depth_channel), axis=-1)  # (H,W,11)
     return final_11ch
 
 
@@ -63,7 +58,7 @@ def spatial_sampling(
     motion_shift=False,
 ):
     """
-    对 (C,T,H,W) 的视频张量进行随机缩放、裁剪、翻转等空间增强。
+    针对 shape=(C,T,H,W) 的视频张量做随机缩放、裁剪、翻转等操作。
     """
     assert spatial_idx in [-1, 0, 1, 2]
     if spatial_idx == -1:
@@ -96,14 +91,17 @@ def spatial_sampling(
 
 class PhaseDataset_Cholec80_dt_rgb(Dataset):
     """
-    同时读取 3通道RGB (data_path_rgb) 与 10mask+1depth (data_path) => 14通道输入
+    同时读取：
+      - 10mask+1depth => (H,W,11)
+      - GSViT提取好的特征 => .npy shape=(feat_dim,)
+    并将二者在最后一维拼接 => (H,W, 11+feat_dim)
     """
 
     def __init__(
         self,
-        anno_path,          # 标注文件
-        data_path,          # 10mask+1depth 的根目录
-        data_path_rgb,      # 3通道 RGB 的根目录
+        anno_path,           # 标注文件 (pickle)
+        data_path,           # 指向 (masks, depths) 的根目录
+        gsvit_feat_root,     # 存放 <video_id>_frameXXXXX.npy 的目录
         mode="train",
         data_strategy="online",  # online/offline
         output_mode="key_frame", # key_frame/all_frame
@@ -120,7 +118,7 @@ class PhaseDataset_Cholec80_dt_rgb(Dataset):
         super().__init__()
         self.anno_path         = anno_path
         self.dt_data_path      = data_path       # 10mask+1depth
-        self.rgb_data_path     = data_path_rgb   # 3通道原图
+        self.gsvit_feat_root   = gsvit_feat_root # GSViT特征保存路径
         self.mode              = mode
         self.data_strategy     = data_strategy
         self.output_mode       = output_mode
@@ -148,265 +146,194 @@ class PhaseDataset_Cholec80_dt_rgb(Dataset):
         with open(self.anno_path, "rb") as f:
             self.infos = pickle.load(f)
 
+        # 构建列表 => dataset_samples
         self.dataset_samples = self._make_dataset(self.infos)
 
-        # =============== 修改 val/test 变为 14 通道 ===============
+        # val/test 的 transforms，看是否需要自己写
         if self.mode == "val":
-            self.data_transform = video_transforms.Compose([
-                video_transforms.Resize((self.short_side_size, self.short_side_size), interpolation="bilinear"),
-                # 原先: volume_transforms.ClipToTensor() => 3 通道
-                volume_transforms.ClipToTensor(channel_nb=14),  # 改成14通道
-            ])
-        elif self.mode == "test":
-            self.data_resize = video_transforms.Compose([
-                video_transforms.Resize((self.short_side_size, self.short_side_size), interpolation="bilinear"),
-            ])
-            self.data_transform = video_transforms.Compose([
-                volume_transforms.ClipToTensor(channel_nb=14),  # 同理14通道
-            ])
-        # =============== 训练阶段如果你也是14通道，也可这样改 ===============
-        elif self.mode == "train":
-            # 演示: 简单的 resize + ClipToTensor(14)，
-            # 如果有更多 augment，可自己写在 _aug_frame
-            
-            # self.data_transform = video_transforms.Compose([
-            #     video_transforms.Resize((self.short_side_size, self.short_side_size), interpolation="bilinear"),
-            #     volume_transforms.ClipToTensor(channel_nb=14),
-            # ])
+            # 这里不再做 volume_transforms.ClipToTensor(channel_nb=14) 之类，
+            # 因为我们是 offline 处理 (H,W, 11+feat_dim) => (C,T,H,W) 在 _aug_frame()
+            # or _valtest_normalize() 做
             pass
-            
-        # ==========================================================
-          
-    
+        elif self.mode == "test":
+            pass
+
     def _make_dataset(self, infos):
         """
-        处理标注文件，构建 self.dataset_samples，每项包含 {
-            'video_id', 'frame_id', 'frames', ..., 'img_path'
-        } 等字段
+        infos: { video_id: [ {frame_id, video_id, frames, phase_gt, ...}, ... ], ... }
         """
-        frames = []
+        samples = []
         for video_id, data_list in infos.items():
             for line_info in data_list:
-                if len(line_info) < 8:
-                    raise RuntimeError(f"Video input format not correct: {line_info}")
-                # 拼出对应的 RGB frames 路径
-                rgb_path = os.path.join(
-                    self.rgb_data_path,
-                    "frames",
-                    line_info["video_id"],
-                    f"{int(line_info['frame_id']):05d}.png",
-                )
-                line_info["img_path"] = rgb_path
-                frames.append(line_info)
-        return frames
-    
+                # line_info 包含 frame_id, video_id, ...
+                samples.append(line_info)
+        return samples
 
     def __len__(self):
         return len(self.dataset_samples)
 
-    
     def __getitem__(self, index):
         info = self.dataset_samples[index]
         video_id = info["video_id"]
-        frame_id = info["frame_id"]
-        frames_count = info["frames"]
-
-        # 根据 data_strategy
+        frame_id = int(info["frame_id"])   # e.g. 1, 2, 3 ...
+        duration = int(info["frames"])
+        # 1) 根据 data_strategy
         if self.data_strategy == "online":
-            buffer, phase_labels, sampled_list = self._video_batch_loader(
-                frames_count, frame_id, video_id, index
-            )
+            buffer, phase_labels, sampled_list = self._video_batch_loader(duration, frame_id, video_id, index)
         else:
-            buffer, phase_labels, sampled_list = self._video_batch_loader_for_key_frames(
-                frames_count, frame_id, video_id, index
-            )
+            buffer, phase_labels, sampled_list = self._video_batch_loader_for_key_frames(duration, frame_id, video_id, index)
 
-        # 训练 / 验证 / 测试 三种模式下做的处理略有不同
+        # 如果 train => 做空间采样 + augment
         if self.mode == "train":
-            # 在 _aug_frame 里进行 spatial_sampling + 通道分离 & 归一化
-            buffer = self._aug_frame(buffer)   # =>(14,T,H,W) tensor
+            buffer = self._aug_frame(buffer)
         else:
-            # val 或 test
-            if self.mode == "val":
-                buffer = self.data_transform(buffer)  # => shape=(14,T,H,W)
-                # 这里若想对RGB做归一化 => 分开前3 vs 后11
-                buffer = self._valtest_rgb_normalize(buffer)
-            elif self.mode == "test":
-                buffer = self.data_resize(buffer)      # => list of (H,W,14) or np.array
-                if isinstance(buffer, list):
-                    buffer = np.stack(buffer, axis=0)  # =>(T,H,W,14)
-                buffer = self.data_transform(buffer)   # =>(14,T,H,W)
-                buffer = self._valtest_rgb_normalize(buffer)
+            # val/test => 做简单 transforms (如需)
+            buffer = self._valtest_transform(buffer)
 
         # 是否有重复帧
         flag = (len(sampled_list) != len(np.unique(sampled_list)))
 
+        # 根据 output_mode
         if self.output_mode == "key_frame":
             if self.data_strategy == "offline":
-                return buffer, phase_labels[self.clip_len // 2], f"{index}_{video_id}_{frame_id}", flag
+                # 取 clip_len // 2
+                label = phase_labels[self.clip_len // 2]
             else:
-                return buffer, phase_labels[-1], f"{index}_{video_id}_{frame_id}", flag
+                label = phase_labels[-1]
+            return buffer, label, f"{index}_{video_id}_{frame_id}", flag
         else:
+            # all_frame
             return buffer, phase_labels, f"{index}_{video_id}_{frame_id}", flag
-        
 
-    def _video_batch_loader(self, duration, cur_frame_id, video_id, index):
-        """
-        'online' 的时序采样: 从当前索引倒序取 self.clip_len 帧。
-        同时在每帧中分别读 3通道RGB + 11通道(mask+depth) => (H,W,14)
-        """
-        duration    = int(duration)
-        cur_frame_id= int(cur_frame_id)
-        index       = int(index)
 
-        offset_value = index - cur_frame_id
+    def _video_batch_loader(self, duration, frame_id, video_id, index):
+        offset_value = index - frame_id
         sr = self.frame_sample_rate
 
         frame_ids = []
-        # 从 cur_frame_id 往前找 self.clip_len 帧
+        cur_fid = frame_id
         for i in range(self.clip_len):
-            frame_ids.append(cur_frame_id)
+            frame_ids.append(cur_fid)
             if sr == -1:
                 sr = random.randint(1, 5)
             elif sr == 0:
                 sr = 2**i
             elif sr == -2:
-                sr = 1 if 2*i == 0 else 2*i
-            if cur_frame_id - sr >= 0:
-                cur_frame_id -= sr
+                sr = 1 if 2*i==0 else 2*i
+            if cur_fid - sr >= 0:
+                cur_fid -= sr
 
-        sampled_list = sorted([fid + offset_value for fid in frame_ids])
-        frames_data  = []
-        labels_data  = []
+        sampled_list = sorted([x + offset_value for x in frame_ids])
+        frames_data = []
+        labels_data = []
 
         for fid in sampled_list:
             fid = int(fid)
-            try:
-                rgb_path = self.dataset_samples[fid]["img_path"]
-                rgb_img  = Image.open(rgb_path).convert("RGB")  # =>(H,W,3)
-                rgb_img  = np.array(rgb_img, dtype=np.uint8)
-                real_frame_id = int(os.path.basename(rgb_path).split(".")[0])
-                
-                # ========== 这里把 RGB 3通道全赋值为 0 ==========
-                # shape (H,W,3)
-                rgb_img[...] = 0.0 
-                
-                
-                
-                # mask+depth
-                mask_dir  = os.path.join(self.dt_data_path, "masks", video_id)
-                depth_dir = os.path.join(self.dt_data_path, "depths", video_id)
-                md_data   = convert_masks_depth(mask_dir, depth_dir, real_frame_id)
+            # 读取 10mask+1depth
+            mask_dir  = os.path.join(self.dt_data_path, "masks", video_id)
+            depth_dir = os.path.join(self.dt_data_path, "depths", video_id)
+            # real_frame_id => e.g. 00123.png
+            real_frame_id = int(self.dataset_samples[fid]["frame_id"])
+            md_data = convert_masks_depth(mask_dir, depth_dir, real_frame_id)  # (H,W,11)
 
-                # 对齐尺寸
-                if rgb_img.shape[:2] != md_data.shape[:2]:
-                    rgb_img = cv2.resize(rgb_img, (md_data.shape[1], md_data.shape[0]))
+            # 读取 GSViT 特征 => shape=(feat_dim,)
+            feat_path = os.path.join(self.gsvit_feat_root, f"{video_id}_frame{real_frame_id:05d}.npy")
+            if not os.path.exists(feat_path):
+                raise FileNotFoundError(f"GSViT feat not found: {feat_path}")
+            feat_vec = np.load(feat_path)  # shape = (feat_dim,)
+            feat_dim = feat_vec.shape[0]
 
-                # 合并 => (H,W,14)
-                rgb_img = rgb_img.astype(np.float32)
-                combined= np.concatenate((rgb_img, md_data), axis=-1)
+            # 将 feat_vec 广播到 (H,W,feat_dim)
+            H, W = md_data.shape[:2]
+            feat_map = np.tile(feat_vec, (H, W, 1))  # => (H,W,feat_dim)
+            # 合并 => (H, W, 11+feat_dim)
+            combined = np.concatenate((md_data, feat_map), axis=-1)
 
-                frames_data.append(combined)
-                labels_data.append(self.dataset_samples[fid]["phase_gt"])
-            except:
-                raise RuntimeError(
-                    f"Error reading frame index {fid} from video={video_id}, path={self.dataset_samples[fid]['img_path']}"
-                )
+            frames_data.append(combined)
+            labels_data.append(self.dataset_samples[fid]["phase_gt"])
 
-        video_data = np.stack(frames_data, axis=0)  # => (T,H,W,14)
-        phase_data = np.stack(labels_data)
+        video_data = np.stack(frames_data, axis=0)  # => (T,H,W, 11+feat_dim)
+        phase_data = np.array(labels_data)
         return video_data, phase_data, sampled_list
 
-    def _video_batch_loader_for_key_frames(self, duration, timestamp, video_id, index):
-        """
-        'offline' 的采样: 向前 / 向后各取 (clip_len/2) 帧，并合并关键帧 => self.clip_len
-        """
-        duration = int(duration)
-        timestamp= int(timestamp)
-        index    = int(index)
-
+    def _video_batch_loader_for_key_frames(self, duration, frame_id, video_id, index):
+        # offline 的类似逻辑
+        # 只演示思路
         right_len = self.clip_len // 2
         left_len  = self.clip_len - right_len
-        offset_value = index - timestamp
+        offset_value = index - frame_id
 
         # 右侧
-        cur_t = timestamp
-        right_frames = []
+        sr = self.frame_sample_rate
+        cur_f = frame_id
+        right_ids = []
         for i in range(right_len):
-            right_frames.append(cur_t)
-            sr = self.frame_sample_rate
+            right_ids.append(cur_f)
             if sr == -1:
                 sr = random.randint(1, 5)
             elif sr == 0:
                 sr = 2**i
             elif sr == -2:
-                sr = 1 if 2*i == 0 else 2*i
-            if cur_t + sr <= duration:
-                cur_t += sr
+                sr = 1 if 2*i==0 else 2*i
+            if cur_f + sr <= duration:
+                cur_f += sr
 
         # 左侧
-        cur_t = timestamp
-        left_frames = []
+        left_ids = []
+        sr = self.frame_sample_rate
+        cur_f = frame_id
         for j in range(left_len):
-            left_frames = [cur_t] + left_frames
-            sr = self.frame_sample_rate
+            left_ids = [cur_f] + left_ids
             if sr == -1:
-                sr = random.randint(1, 5)
+                sr = random.randint(1,5)
             elif sr == 0:
                 sr = 2**j
             elif sr == -2:
-                sr = 1 if 2*j == 0 else 2*j
-            if cur_t - sr >= 0:
-                cur_t -= sr
+                sr = 1 if 2*j==0 else 2*j
+            if cur_f - sr >=0:
+                cur_f -= sr
 
-        frame_id_list = left_frames + right_frames
-        assert len(frame_id_list) == self.clip_len
+        frame_id_list = left_ids + right_ids
+        sampled_list = [x + offset_value for x in frame_id_list]
 
-        sampled_list = [fid + offset_value for fid in frame_id_list]
-        frames_data  = []
-        labels_data  = []
+        frames_data = []
+        labels_data = []
 
         for fid in sampled_list:
             fid = int(fid)
-            try:
-                rgb_path = self.dataset_samples[fid]["img_path"]
-                rgb_img  = Image.open(rgb_path).convert("RGB")
-                rgb_img  = np.array(rgb_img, dtype=np.float32)
-                real_frame_id = int(os.path.basename(rgb_path).split(".")[0])
-                
-                # ========== 把RGB赋值0 ==========
-                rgb_img[...] = 0.0
-                
-                
 
-                mask_dir  = os.path.join(self.dt_data_path, "masks", video_id)
-                depth_dir = os.path.join(self.dt_data_path, "depths", video_id)
-                md_data   = convert_masks_depth(mask_dir, depth_dir, real_frame_id)
+            mask_dir  = os.path.join(self.dt_data_path, "masks", video_id)
+            depth_dir = os.path.join(self.dt_data_path, "depths", video_id)
+            real_frame_id = int(self.dataset_samples[fid]["frame_id"])
+            md_data = convert_masks_depth(mask_dir, depth_dir, real_frame_id)
 
-                if rgb_img.shape[:2] != md_data.shape[:2]:
-                    rgb_img = cv2.resize(rgb_img, (md_data.shape[1], md_data.shape[0]))
+            feat_path = os.path.join(self.gsvit_feat_root, f"{video_id}_frame{real_frame_id:05d}.npy")
+            if not os.path.exists(feat_path):
+                raise FileNotFoundError(f"GSViT feat not found: {feat_path}")
+            feat_vec = np.load(feat_path)
+            feat_dim = feat_vec.shape[0]
+            H, W = md_data.shape[:2]
+            feat_map = np.tile(feat_vec, (H, W, 1))
 
-                combined = np.concatenate((rgb_img, md_data), axis=-1)
-                frames_data.append(combined)
-                labels_data.append(self.dataset_samples[fid]["phase_gt"])
-            except:
-                raise RuntimeError(
-                    f"Error reading frame index {fid} from video={video_id}, path={self.dataset_samples[fid]['img_path']}"
-                )
+            combined = np.concatenate((md_data, feat_map), axis=-1)
+            frames_data.append(combined)
+            labels_data.append(self.dataset_samples[fid]["phase_gt"])
 
-        video_data = np.stack(frames_data, axis=0)  # =>(T,H,W,14)
-        phase_data = np.stack(labels_data)
+        video_data = np.stack(frames_data, axis=0)  # => (T,H,W, 11+feat_dim)
+        phase_data = np.array(labels_data)
         return video_data, phase_data, sampled_list
 
     def _aug_frame(self, buffer):
         """
-        针对训练集(14通道)做数据增强 + 归一化。
-        buffer shape = (T,H,W,14) in numpy
+        训练集处理:
+         buffer: shape=(T,H,W, 11+feat_dim) in np.float32
+         => (C,T,H,W) => spatial_sampling => split前N channels(??) => ...
         """
-        # =>(C,T,H,W)
-        buffer = torch.from_numpy(buffer).permute(3,0,1,2)  # (14,T,H,W)
+        # => (C,T,H,W)
+        buffer = torch.from_numpy(buffer)  # => shape=(T,H,W, 11+dim)
+        buffer = buffer.permute(3,0,1,2)   # => (11+dim, T, H, W)
 
-        # 做随机裁剪、缩放、flip等
+        # 做随机裁剪
         buffer = spatial_sampling(
             buffer,
             spatial_idx=-1,
@@ -414,53 +341,17 @@ class PhaseDataset_Cholec80_dt_rgb(Dataset):
             max_scale=320,
             crop_size=self.crop_size,
             random_horizontal_flip=True,
-            aspect_ratio=[0.75, 1.3333],
-            scale=[0.7, 1.0],
+            aspect_ratio=[0.75,1.3333],
+            scale=[0.7,1.0],
             motion_shift=False,
         )
-        # buffer 仍然是 (14, T, H, W)
-
-        # =========== 重点：分离前3通道(RGB) & 后11通道( mask + depth ) ===============
-        rgb = buffer[:3]   # shape (3, T, H, W)
-        md  = buffer[3:]   # shape (11, T, H, W)
-
-        # 对RGB做: /255.0 => 减 mean => 除 std
-        rgb = rgb / 255.0
-        rgb_mean = torch.tensor([0.485, 0.456, 0.406], dtype=rgb.dtype, device=rgb.device).view(3,1,1,1)
-        rgb_std  = torch.tensor([0.229, 0.224, 0.225], dtype=rgb.dtype, device=rgb.device).view(3,1,1,1)
-        rgb = (rgb - rgb_mean) / rgb_std
-
-        # 对 mask+depth => 不做任何归一化
-        #   - mask 原本0/1的one-hot, depth是[0,1],都无需再处理
-
-        # 拼回
-        buffer = torch.cat((rgb, md), dim=0)  # => (14, T, H, W)
-
-        # 如果需要 random erasing 只对RGB 或同样对整14通道
-        # if self.rand_erase:
-        #     buffer = buffer.permute(1,0,2,3)  # =>(T,14,H,W)
-        #     re_op = RandomErasing(
-        #         self.args.reprob, mode=self.args.remode,
-        #         max_count=self.args.recount, num_splits=self.args.recount,
-        #         device="cpu",
-        #     )
-        #     buffer = re_op(buffer)  # 这会对所有通道做erase, 可能不太适合mask
-        #     buffer = buffer.permute(1,0,2,3)
-
         return buffer
 
-
-    def _valtest_rgb_normalize(self, buffer):
-            """
-            对 val/test 的 14通道tensor, 只对前3通道做 /255 => 减均值/除方差
-            buffer: shape=(14,T,H,W), torch.float
-            """
-            rgb = buffer[:3] / 255.0
-            md  = buffer[3:]
-
-            device_ = buffer.device
-            rgb_mean = torch.tensor([0.485,0.456,0.406], device=device_).view(3,1,1,1)
-            rgb_std  = torch.tensor([0.229,0.224,0.225], device=device_).view(3,1,1,1)
-            rgb = (rgb - rgb_mean) / rgb_std
-
-            return torch.cat([rgb, md], dim=0)
+    def _valtest_transform(self, buffer):
+        """
+        val/test 的简化处理；
+        buffer: (T,H,W, 11+dim) => (C,T,H,W)
+        """
+        buffer = torch.from_numpy(buffer).permute(3,0,1,2)  # =>(11+dim, T,H,W)
+        # 你可能还想做 resize / center-crop 之类
+        return buffer

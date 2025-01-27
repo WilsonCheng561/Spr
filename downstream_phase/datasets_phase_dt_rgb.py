@@ -32,7 +32,8 @@ def build_dataset_dt_rgb(is_train, test_mode, fps, args):
         dataset = PhaseDataset_Cholec80_dt_rgb(
             anno_path=anno_path,
             data_path=args.data_path,
-            data_path_rgb= args.data_path_rgb, # 3通道原图路径
+            # data_path_rgb= args.data_path_rgb, # 3通道原图路径
+            gsvit_feat_root = args.gsvit_feat_root, # 10通道mask路径
             mode=mode,
             data_strategy=args.data_strategy,      # online / offline
             output_mode=args.output_mode,          # key_frame / all_frame
@@ -47,6 +48,10 @@ def build_dataset_dt_rgb(is_train, test_mode, fps, args):
             args=args,
         )
         nb_classes = 7
+        
+        # print("anno_path:\n",anno_path)
+        
+        
     else:
         print("Error")
         return None, None

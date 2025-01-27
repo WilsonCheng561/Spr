@@ -139,9 +139,7 @@ def spatial_sampling(
         # The testing is deterministic and no jitter should be performed.
         # min_scale, max_scale, and crop_size are expect to be the same.
         assert len({min_scale, max_scale, crop_size}) == 1
-        frames, _ = video_transforms.random_short_side_scale_jitter(
-            frames, min_scale, max_scale
-        )
+        frames, _ = video_transforms.random_short_side_scale_jitter(frames, min_scale, max_scale )
         frames, _ = video_transforms.uniform_crop(frames, crop_size, spatial_idx)
     return frames
 
@@ -514,12 +512,7 @@ class PhaseDataset_Cholec80_dt(Dataset):
             for line_info in data:
                 # line format: unique_id, frame_id, video_id, tool_gt, phase_gt, phase_name, fps, frames
                 if len(line_info) < 8:
-                    raise (
-                        RuntimeError(
-                            "Video input format is not correct, missing one or more element. %s"
-                            % line_info
-                        )
-                    )
+                    raise (RuntimeError("Video input format is not correct, missing one or more element. %s"% line_info))
                 img_path = os.path.join(
                     self.data_path,
                     "frames",
