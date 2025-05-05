@@ -1,0 +1,114 @@
+[Triplet Error] Video 04, Frame 3350, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 3350, Triplet Index 1, Value: Fat
+[Triplet Error] Video 04, Frame 3350, Triplet Index 2, Value: Grasping
+[Triplet Error] Video 04, Frame 3375, Triplet Index 0, Value: 
+[Triplet Error] Video 04, Frame 3375, Triplet Index 1, Value: Liver
+[Triplet Error] Video 04, Frame 3375, Triplet Index 2, Value: Observation
+[Triplet Error] Video 04, Frame 3425, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 3425, Triplet Index 1, Value: Liver
+[Triplet Error] Video 04, Frame 3425, Triplet Index 2, Value: Retracting
+[Triplet Error] Video 04, Frame 3500, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 3500, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 3500, Triplet Index 2, Value: Grasping
+[Triplet Error] Video 04, Frame 3600, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 3600, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 3600, Triplet Index 2, Value: Lifting
+[Triplet Error] Video 04, Frame 4925, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 4925, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 4925, Triplet Index 2, Value: Positioning
+[Triplet Error] Video 04, Frame 5050, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 5050, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 5050, Triplet Index 2, Value: Grasping
+[Triplet Error] Video 04, Frame 5325, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 5325, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 5325, Triplet Index 2, Value: Manipulating
+[Triplet Error] Video 04, Frame 6925, Triplet Index 0, Value: 
+[Triplet Error] Video 04, Frame 6925, Triplet Index 1, Value: 
+[Triplet Error] Video 04, Frame 6925, Triplet Index 2, Value: Blurry View
+[Triplet Error] Video 04, Frame 7300, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 7300, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 7300, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 8900, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 8900, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 8900, Triplet Index 2, Value: Holding
+[Triplet Error] Video 04, Frame 10500, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 10500, Triplet Index 1, Value: Tissue
+[Triplet Error] Video 04, Frame 10500, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 12100, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 12100, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 12100, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 13700, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 13700, Triplet Index 1, Value: Cystic Duct
+[Triplet Error] Video 04, Frame 13700, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 15300, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 15300, Triplet Index 1, Value: Cystic Duct
+[Triplet Error] Video 04, Frame 15300, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 16225, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 16225, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 16225, Triplet Index 2, Value: Stabilizing
+[Triplet Error] Video 04, Frame 16450, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 16450, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 16450, Triplet Index 2, Value: Manipulating
+[Triplet Error] Video 04, Frame 18050, Triplet Index 0, Value: Bipolar
+[Triplet Error] Video 04, Frame 18050, Triplet Index 1, Value: Tissue
+[Triplet Error] Video 04, Frame 18050, Triplet Index 2, Value: Cauterizing
+[Triplet Error] Video 04, Frame 18075, Triplet Index 0, Value: Bipolar
+[Triplet Error] Video 04, Frame 18075, Triplet Index 1, Value: Tissue
+[Triplet Error] Video 04, Frame 18075, Triplet Index 2, Value: Cauterizing
+[Triplet Error] Video 04, Frame 19100, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 19100, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 19100, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 20700, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 20700, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 20700, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 22300, Triplet Index 0, Value: 
+[Triplet Error] Video 04, Frame 22300, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 22300, Triplet Index 2, Value: Dissected
+[Triplet Error] Video 04, Frame 22450, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 22450, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 22450, Triplet Index 2, Value: Retracting
+[Triplet Error] Video 04, Frame 23575, Triplet Index 0, Value: Clipper
+[Triplet Error] Video 04, Frame 23575, Triplet Index 1, Value: Cystic Duct
+[Triplet Error] Video 04, Frame 23575, Triplet Index 2, Value: Clipping
+[Triplet Error] Video 04, Frame 24225, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 24225, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 24225, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 25425, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 25425, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 25425, Triplet Index 2, Value: Retracting
+[Triplet Error] Video 04, Frame 27025, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 27025, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 27025, Triplet Index 2, Value: Positioning
+[Triplet Error] Video 04, Frame 27100, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 27100, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 27100, Triplet Index 2, Value: Retracting
+[Triplet Error] Video 04, Frame 28700, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 28700, Triplet Index 1, Value: Tissue
+[Triplet Error] Video 04, Frame 28700, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 30300, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 30300, Triplet Index 1, Value: Liver
+[Triplet Error] Video 04, Frame 30300, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 31075, Triplet Index 0, Value: Hook
+[Triplet Error] Video 04, Frame 31075, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 04, Frame 31075, Triplet Index 2, Value: Dissecting
+[Triplet Error] Video 04, Frame 31200, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 31200, Triplet Index 1, Value: Specimen Bag
+[Triplet Error] Video 04, Frame 31200, Triplet Index 2, Value: Retrieving
+[Triplet Error] Video 04, Frame 31550, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 31550, Triplet Index 1, Value: Specimen Bag
+[Triplet Error] Video 04, Frame 31550, Triplet Index 2, Value: Securing
+[Triplet Error] Video 04, Frame 32375, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 04, Frame 32375, Triplet Index 1, Value: Tissue
+[Triplet Error] Video 04, Frame 32375, Triplet Index 2, Value: Inspecting
+[Triplet Error] Video 04, Frame 33975, Triplet Index 0, Value: Bipolar
+[Triplet Error] Video 04, Frame 33975, Triplet Index 1, Value: Liver Bed
+[Triplet Error] Video 04, Frame 33975, Triplet Index 2, Value: Cauterizing
+[Triplet Error] Video 04, Frame 35575, Triplet Index 0, Value: 
+[Triplet Error] Video 04, Frame 35575, Triplet Index 1, Value: Abdominal Cavity
+[Triplet Error] Video 04, Frame 35575, Triplet Index 2, Value: Inspecting
+[Triplet Error] Video 04, Frame 35875, Triplet Index 0, Value: Instrument
+[Triplet Error] Video 04, Frame 35875, Triplet Index 1, Value: Abdominal Cavity
+[Triplet Error] Video 04, Frame 35875, Triplet Index 2, Value: Inspecting
+[Triplet Error] Video 04, Frame 36100, Triplet Index 0, Value: Instrument
+[Triplet Error] Video 04, Frame 36100, Triplet Index 1, Value: Fat
+[Triplet Error] Video 04, Frame 36100, Triplet Index 2, Value: Retracting

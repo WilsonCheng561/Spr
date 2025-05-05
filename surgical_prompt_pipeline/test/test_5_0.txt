@@ -1,0 +1,50 @@
+video01：
+Tool                 Precision  Recall      F1
+Grasper                  0.958   0.821   0.885
+Bipolar                  1.000   0.750   0.857
+Hook                     0.750   1.000   0.857
+Irrigator                1.000   0.333   0.500
+ScissorOrClipper         0.500   0.500   0.500
+SpecimenBag              0.800   1.000   0.889
+
+video02：
+Tool                 Precision  Recall      F1
+Grasper                  0.974   0.740   0.841
+Bipolar                  0.000   0.000   0.000
+Hook                     0.963   0.963   0.963
+Irrigator                0.556   0.714   0.625
+ScissorOrClipper         0.500   0.571   0.533
+SpecimenBag              0.750   0.600   0.667
+
+video03：
+Tool                 Precision  Recall      F1
+Grasper                  1.000   0.889   0.941
+Bipolar                  1.000   0.625   0.769
+Hook                     0.857   0.831   0.844
+Irrigator                0.600   0.545   0.571
+ScissorOrClipper         0.188   1.000   0.316
+SpecimenBag              1.000   0.400   0.571
+
+video05：
+Tool                 Precision  Recall      F1
+Grasper                  1.000   0.816   0.899
+Bipolar                  0.000   0.000   0.000
+Hook                     0.850   0.944   0.895
+Irrigator                0.000   0.000   0.000
+ScissorOrClipper         0.600   0.750   0.667
+SpecimenBag              0.833   1.000   0.909
+
+========================================
+ Overall summary (excluding invalid videos):
+Average Precision   : 0.695
+Average Recall      : 0.658
+Average F1-Score    : 0.646
+
+ Per-tool average metrics (excluding invalid videos):
+Tool                 Precision  Recall      F1
+Grasper                  0.983   0.817   0.891
+Bipolar                  0.500   0.344   0.406
+Hook                     0.855   0.934   0.890
+Irrigator                0.539   0.398   0.424
+ScissorOrClipper         0.447   0.705   0.504
+SpecimenBag              0.846   0.750   0.759

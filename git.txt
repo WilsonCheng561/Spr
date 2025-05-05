@@ -1,0 +1,79 @@
+初始化（pw：cwz）
+cd /Wenzheng
+git clone git@github.com:WilsonCheng561/Spr.git
+cd Spr
+git checkout gsvit
+cp -r ../Digital-Twin-based-Surgical-Phase-Recognition/* .
+git add .
+
+如果报错了
+git submodule add https://github.com/SamuelSchmidgall/GSViT.git GSViT
+git submodule update --init --recursive
+
+删除子模块引用
+git rm -r --cached GSViT
+rm -rf GSViT/.git
+
+git commit -m "Add GSViT content directly to the repository"
+git push origin gsvit
+
+
+
+
+# 查看命令帮助
+~# oss help
+# 登陆恒源云账号，使用恒源云的账号名与密码，账号名为手机号
+# 如果是非中国大陆手机号码，需要加上带 + 的区号
+~# oss login
+Username:139********
+Password:***********
+139******** login successfully!
+
+#在个人数据中创建文件夹
+~# oss mkdir oss://datasets
+Create folder [oss://] successfully, request id [0000017E0091FBEC9012CBB9E0EBBCE1]
+Create folder [oss://datasets/] successfully, request id [0000017E0091FC1D9012CC094BBD9AF3]
+
+#将本地电脑的 "个人数据.zip" 上传至平台个人数据中的 `datasets` 文件夹下
+~# oss cp 个人数据.zip oss://datasets/
+
+#查看我上传的 个人数据.zip
+~# oss ls -s -d oss://datasets/
+Listing objects .
+Folder list:
+oss://datasets/
+Object list:
+oss://datasets/个人数据.zip
+Folder number is: 1
+File number is: 1
+
+#下载个人数据到/hy-tmp/目录下
+~# oss cp oss://datasets/cholec80_toy.zip /hy-tmp/
+
+#查看已下载到/hy-tmp/目录中的数据
+~# ls /hy-tmp/
+
+hy-tmp/cholec80_toy
+
+
+
+
+## git报错 403permission denied 处理
+生成ssh key
+ssh-keygen -t rsa -b 4096 -C "cwz1605672099@gmail.com" -f ~/.ssh/id_rsa_wilson
+为当前 repo 显式指定使用该密钥
+nano ~/.ssh/config
+
+Host github-wilson
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa_wilson
+    IdentitiesOnly yes
+
+cat ~/.ssh/id_rsa.pub
+复制到github deploy key
+
+设置远程git仓库为ssh地址
+cd /mnt/disk0/haoding/surgical-images-pertool-clean
+git remote set-url origin git@github.com:WilsonCheng561/surgical-img-pertool.git
+ssh -T git@github.com

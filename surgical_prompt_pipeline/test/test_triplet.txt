@@ -1,0 +1,59 @@
+video01：
+Tool                 Precision  Recall      F1
+Grasper                  0.905   0.658   0.762
+Bipolar                  0.979   0.395   0.563
+Hook                     0.824   0.761   0.791
+Irrigator                0.650   0.109   0.187
+ScissorOrClipper         0.398   0.378   0.388
+SpecimenBag              0.976   0.769   0.860
+
+video02：
+Tool                 Precision  Recall      F1
+Grasper                  0.834   0.445   0.581
+Bipolar                  0.941   0.130   0.229
+Hook                     0.833   0.446   0.581
+Irrigator                0.615   0.045   0.083
+ScissorOrClipper         0.298   0.245   0.269
+SpecimenBag              0.857   0.840   0.848
+
+video03：
+Tool                 Precision  Recall      F1
+Grasper                  0.993   0.310   0.473
+Bipolar                  0.345   0.038   0.068
+Hook                     0.762   0.248   0.374
+Irrigator                0.758   0.034   0.065
+ScissorOrClipper         0.000   0.000   0.000
+SpecimenBag              0.000   0.000   0.000
+
+video04：
+Tool                 Precision  Recall      F1
+Grasper                  0.935   0.510   0.660
+Bipolar                  0.920   0.284   0.434
+Hook                     0.889   0.548   0.678
+Irrigator                0.000   0.000   0.000
+ScissorOrClipper         0.387   0.362   0.374
+SpecimenBag              1.000   0.191   0.321
+
+video05：
+Tool                 Precision  Recall      F1
+Grasper                  0.948   0.740   0.832
+Bipolar                  0.850   0.548   0.667
+Hook                     0.905   0.827   0.864
+Irrigator                0.250   0.092   0.134
+ScissorOrClipper         0.356   0.457   0.400
+SpecimenBag              1.000   0.780   0.876
+
+========================================
+ Overall summary (excluding invalid videos):
+Average Precision   : 0.680
+Average Recall      : 0.373
+Average F1-Score    : 0.445
+
+ Per-tool average metrics (excluding invalid videos):
+Tool                 Precision  Recall      F1
+Grasper                  0.923   0.533   0.662
+Bipolar                  0.807   0.279   0.392
+Hook                     0.843   0.566   0.658
+Irrigator                0.455   0.056   0.094
+ScissorOrClipper         0.288   0.288   0.286
+SpecimenBag              0.767   0.516   0.581

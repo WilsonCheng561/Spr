@@ -1,0 +1,6 @@
+[Triplet Error] Video 01, Frame 250, Triplet Index 0, Value: Grasper
+[Triplet Error] Video 01, Frame 250, Triplet Index 1, Value: Gallbladder
+[Triplet Error] Video 01, Frame 250, Triplet Index 2, Value: hold
+[Triplet Error] Video 02, Frame 975, Triplet Index 0, Value: Scissors
+[Triplet Error] Video 02, Frame 975, Triplet Index 1, Value: Cystic Duct
+[Triplet Error] Video 02, Frame 975, Triplet Index 2, Value: Cutting
